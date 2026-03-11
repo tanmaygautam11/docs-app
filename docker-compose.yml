@@ -1,17 +1,20 @@
-version: "3"
-
 services:
+
   client:
-    build: ./client
+    build:
+      context: .
+      dockerfile: docker/client.Dockerfile
     ports:
       - "3000:3000"
 
   server:
-    build: ./server
+    build:
+      context: .
+      dockerfile: docker/server.Dockerfile
     ports:
       - "5000:5000"
 
-  mongodb:
+  mongo:
     image: mongo
     ports:
       - "27017:27017"
