@@ -4,4 +4,5 @@ node_modules
 dist
 build
 coverage
-.DS_Store
+.DS_Storeclient/.git.backup
+.git_backups/
