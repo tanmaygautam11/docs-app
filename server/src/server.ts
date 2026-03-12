@@ -1,38 +1,40 @@
 import express from "express"
-import { Server, Socket } from "socket.io"
 import cors from "cors"
-import connectToMongo from "./utils/db"
+import http from "http"
+import { Server } from "socket.io"
+import dotenv from "dotenv"
+
+import { connectDB } from "./config/db"
+import { setupSocket } from "./sockets/documentSocket"
+
+dotenv.config()
 
 const app = express()
-app.use(cors())
 
-async function main() {
-  try {
-    await connectToMongo()
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  })
+)
 
-    const io = new Server(3001, {
-      cors: { origin: "http://localhost:3000", methods: ["GET", "POST"] },
-    })
+const server = http.createServer(app)
 
-    io.on("connection", (socket: Socket) => {
-      console.log("User connected")
+async function startServer() {
+  await connectDB()
 
-      socket.on("get-document", (documentId: string) => {
-        const data = ""
-        socket.join(documentId)
-        socket.emit("load-document", data)
+  const io = new Server(server, {
+    cors: {
+      origin: "http://localhost:3000",
+      methods: ["GET", "POST"],
+    },
+  })
 
-        socket.on("send-changes", (delta) => {
-          socket.broadcast.to(documentId).emit("receive-changes", delta)
-        })
-      })
-    })
+  setupSocket(io)
 
-    console.log("Socket.IO server listening on port 3001")
-  } catch (err) {
-    console.error("Failed to start server:", err)
-    process.exit(1)
-  }
+  server.listen(3001, () => {
+    console.log("Server running on port 3001")
+  })
 }
 
-void main()
+void startServer()
